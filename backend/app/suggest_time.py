@@ -1,16 +1,30 @@
-from .models import Schedules, Assignments
+from .models import Schedules, Assignments, ToDoLists, GroupTags
 import datetime
 import copy
 import numpy as np
 from itertools import chain
 
-class CommonSchedule:
+class SuggestTime:
     def __init__(self, request):
-        self.my_user_id = request.get("user")
-        self.collabo_id_list = request.get("collaboration_member_id").split(",")
-        self.required_time = datetime.timedelta(hours=int(request.get("required_time").split(":")[0]), minutes=int(request.get("required_time").split(":")[1]))
+        print(request)
+        print(request.get("to_do_list"))
+        to_do_list = ToDoLists.objects.get(id=request.get("to_do_list"))
+        self.my_user_id = to_do_list.user
+        if to_do_list.collaborating_member:
+            self_collabo_id_list = [to_do_list.collaborating_member]
+        elif to_do_list.collaborating_group:
+            self.collabo_id_list = [tag.user for tag in GroupTags.objects.filter(groupname=to_do_list.collaborating_group)]
+        else:
+            self.collabo_id_list = []
+        self.required_time = datetime.timedelta(hours=to_do_list.estimated_work_time.hour, minutes=to_do_list.estimated_work_time.minute)
         self.required_time_minute = self.required_time.total_seconds() // 60
-        self.limit_date = datetime.datetime.strptime(request.get("end_time"), '%Y-%m-%d %H:%M:%S')
+
+        if self.required_time_minute >= 60*4:
+            self.assignment_count = self.required_time_minute // (60*2)
+            self.required_time_minute = self.required_time_minute // self.assignment_count
+        else:
+            self.assignment_count = 1
+        self.limit_date = to_do_list.limited_time
     
     def helloworld(self):
         return "helloworld"
@@ -25,7 +39,6 @@ class CommonSchedule:
         return ("00" + str(h))[-2:] + ":" + ("00" + str(m))[-2:] + ":" + ("00" + str(s))[-2:]
 
     def __get_user_schedule(self, user_id, date):
-        #return Schedules.objects.filter(user_id=user_id, start_time__date=date)
         return list(chain(Schedules.objects.filter(user_id=user_id, start_time__date=date), Assignments.objects.filter(user_id=user_id, start_time__date=date)))
     
     def __create_time_dict(self):
@@ -51,14 +64,14 @@ class CommonSchedule:
 
         return time_dict, priority_time_indexes
 
-    def get_common_schedule(self):
+    def get_suggest_time(self):
         return_data = []
         all_user_ids = copy.copy(self.collabo_id_list)
         all_user_ids.append(self.my_user_id)
 
         time_dict, priority_time_indexes = self.__create_time_dict()
 
-        for day in range((self.limit_date - datetime.datetime.now()).days + 1):
+        for day in range((self.limit_date - datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9), "JST"))).days + 1):
             date = (datetime.datetime.now() + datetime.timedelta(days=day)).date()
             for user_id in all_user_ids:
                 user_schedules = self.__get_user_schedule(user_id, date)
@@ -68,7 +81,12 @@ class CommonSchedule:
                     time_list = np.array([0 for _ in range(self.__calc_list_number(self.required_time_minute))])
 
                     schedule.start_time = schedule.start_time + datetime.timedelta(hours=9)
-                    schedule.end_time = schedule.end_time + datetime.timedelta(hours=9)
+                    if hasattr(schedule, "margin"):
+                        print(schedule.margin.hour)
+                        margin_time = datetime.timedelta(hours=schedule.margin.hour, minutes=schedule.margin.minute, seconds=schedule.margin.second)
+                        schedule.end_time = schedule.end_time + datetime.timedelta(hours=9) + margin_time
+                    else:
+                        schedule.end_time = schedule.end_time + datetime.timedelta(hours=9)
 
                     start = schedule.start_time.hour * 60 + ((schedule.start_time.minute // self.required_time_minute) * self.required_time_minute) + (((schedule.start_time.second / 60) // (self.required_time_minute * 60)) * self.required_time_minute * 60)
                     end = schedule.end_time.hour * 60 + ((schedule.end_time.minute // self.required_time_minute) * self.required_time_minute) + (((schedule.end_time.second / 60) // (self.required_time_minute * 60)) * self.required_time_minute * 60)
@@ -89,6 +107,6 @@ class CommonSchedule:
                     schedule_dict = {}
                     if all_user_time_list[i] == 0:
                         schedule_dict["start_time"] = datetime.datetime.combine(date, datetime.datetime.strptime(time_dict[i], "%H:%M:%S").time())
-                        schedule_dict["end_time"] = schedule_dict["start_time"] + self.required_time
+                        schedule_dict["end_time"] = schedule_dict["start_time"] + datetime.timedelta(minutes=self.required_time_minute)
                         return_data.append(schedule_dict)
-        return return_data
+        return return_data, self.assignment_count

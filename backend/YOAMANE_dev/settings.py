@@ -31,7 +31,7 @@ SECRET_KEY = env('SECRET_KEY')
 # DEBUG = True
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = ["sysken8.japanwest.cloudapp.azure.com"]
+ALLOWED_HOSTS = ["sysken8.japanwest.cloudapp.azure.com", "20.63.212.194"]
 
 AUTH_USER_MODEL = "app.Users"
 
@@ -86,12 +86,14 @@ WSGI_APPLICATION = 'YOAMANE_dev.wsgi.application'
 
 DATABASES = {
     'default': {
-         'ENGINE': env('SQL_ENGINE'),
-         'NAME': env('SQL_DATABASE'),
-         'USER': env('SQL_USER'),
-         'PASSWORD': env('SQL_PASSWORD'),
-         'HOST': env('SQL_HOST'),
-         'PORT': env('SQL_PORT'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+         #'ENGINE': env('SQL_ENGINE'),
+         #'NAME': env('SQL_DATABASE'),
+         #'USER': env('SQL_USER'),
+         #'PASSWORD': env('SQL_PASSWORD'),
+         #'HOST': env('SQL_HOST'),
+         #'PORT': env('SQL_PORT'),
     }
 }
 

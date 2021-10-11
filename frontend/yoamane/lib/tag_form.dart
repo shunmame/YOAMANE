@@ -1,6 +1,10 @@
 import 'yoamane_libraries.dart';
 
 class TagFormPage extends StatefulWidget {
+  TagFormPage({this.friendName});
+
+  final friendName;
+
   @override
   State<StatefulWidget> createState() => _TagFormPage();
 }
@@ -8,7 +12,17 @@ class TagFormPage extends StatefulWidget {
 class _TagFormPage extends State<TagFormPage> {
   final _formKey = GlobalKey<FormState>();
 
-  List<bool> _values = List.filled(friendList.length, false);
+  List<bool> _values = [];
+
+  void setup() {
+    _values = List.filled(widget.friendName.length, false);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    setup();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +40,7 @@ class _TagFormPage extends State<TagFormPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(width: 20.0, height: 20.0),
-              Text('タグ名'),
+              Text('タグ名', style: TextStyle(fontSize: 25.0)),
               TextFormField(
                 maxLength: 50,
                 decoration: InputDecoration(border: OutlineInputBorder()),
@@ -34,13 +48,14 @@ class _TagFormPage extends State<TagFormPage> {
                 validator: (value) => formStatus(value),
               ),
               SizedBox(width: 20.0, height: 20.0),
-              Text('タグ付けする友達'),
+              Text('タグ付けする友達', style: TextStyle(fontSize: 25.0)),
               ListView.builder(
                 shrinkWrap: true,
-                itemCount: friendList.length,
+                itemCount: widget.friendName.length,
                 itemBuilder: (context, index) {
                   return CheckboxListTile(
-                    title: Text(friendList[index]),
+                    title: Text(widget.friendName[index],
+                        style: TextStyle(fontSize: 30.0)),
                     activeColor: Colors.black,
                     value: _values[index],
                     onChanged: (bool? value) => setState(() {
@@ -49,20 +64,12 @@ class _TagFormPage extends State<TagFormPage> {
                   );
                 },
               ),
-//              Text('あなたのタグ'),
-//              ListView.builder(
-//                shrinkWrap: true,
-//                itemCount: tags.length,
-//                itemBuilder: (context, index) {
-//                  return Text(tags[index]);
-//                },
-//              ),
               Container(
                 width: double.infinity,
                 height: 125.0,
                 alignment: Alignment.center,
                 child: ElevatedButton(
-                  child: Text('保存'),
+                  child: Text('保存', style: TextStyle(fontSize: 20.0)),
                   onPressed: () {
                     // if (_formKey.currentState!.validate()) {
                     //   Navigator.push(

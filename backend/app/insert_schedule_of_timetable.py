@@ -70,6 +70,7 @@ class TimeTableSchedule:
         for delta_day in range((end_day - start_day).days + 1):
             date = start_day + datetime.timedelta(days=delta_day)
             if self.__isBizDay(date):
+                print(self.time_tables[week_days[date.weekday()]+"_timetable"])
                 time_table = json.loads(self.time_tables[week_days[date.weekday()] + "_timetable"])
 
                 for key, class_time in zip(time_table, class_times):
@@ -89,32 +90,9 @@ class TimeTableSchedule:
         return schedules
 
     def update_class_schedule(self):
-        week_days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
-        dict_keys = ["first", "second", "third", "fourth", "fifth"]
-        schedules = []
-        date = False
-        counter = 0
+        start_time = (datetime.datetime.now() + datetime.timedelta(hours=9))
+        end_time = datetime.datetime(2021, 12, 31)
+        Schedules.objects.filter(user=self.user_id, is_class=True, start_time__range=[start_time, end_time]).delete()
 
-        class_times = self.__calc_class_time()
+        return self.get_class_schedule()
 
-        for schedule in Schedules.objects.filter(user=self.user_id, is_class=True):
-            if not date:
-                date = schedule.start_time.date()
-            else:
-                if date != schedule.start_time.date():
-                    date = schedule.start_time.date()
-                    counter = 0
-            time_table = json.loads(self.time_tables[week_days[schedule.start_time.weekday()] + "_timetable"])
-            if not len(time_table):
-                continue
-            try:
-                schedule.title = Subjects.objects.get(pk=time_table[dict_keys[counter]]).name
-                schedule.start_time = datetime.datetime.combine(schedule.start_time.date(), class_times[counter]["start_time"])
-                schedule.end_time = datetime.datetime.combine(schedule.start_time.date(), class_times[counter]["end_time"])
-            except KeyError:
-                schedule.delete()
-            schedules.append(schedule)
-
-            counter += 1
-
-        return schedules

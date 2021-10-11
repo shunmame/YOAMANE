@@ -25,40 +25,73 @@ class _AssignmentDetailPage extends State<AssignmentDetailPage> {
       body: SafeArea(
         child: ListView.builder(
           shrinkWrap: true,
-          itemCount: 1,
+          itemCount: widget.subjectTask.length,
           itemBuilder: (context, index) {
             return Column(
               children: [
-                Card(
-                  child: ListTile(
-                    title: Text(
-                      utf8.decode((widget.subjectTask['name']).runes.toList()),
-                      style: TextStyle(fontSize: 30.0),
-                    ),
-                    subtitle: Text(
-                      '期日 : ' +
-                          DateFormat('yyyy年M月d日').format(DateTime.parse(
-                              widget.subjectTask['limited_time'])),
-                      style: TextStyle(fontSize: 20.0),
-                    ),
-                    onTap: () {},
-                  ),
-                ),
-                if (widget.subjectSubtask.length != 0)
+                if (widget.subjectTask.length != 0)
                   Card(
-                    child: CheckboxListTile(
+                    child: ListTile(
                       title: Text(
                         utf8.decode(
-                            (widget.subjectSubtask[0]['name']).runes.toList()),
+                            (widget.subjectTask[index]['name']).runes.toList()),
+                        style: TextStyle(fontSize: 30.0),
+                      ),
+                      subtitle: Text(
+                        '期日 : ' +
+                            DateFormat('yyyy年M月d日').format(DateTime.parse(
+                                widget.subjectTask[index]['limited_time'])),
                         style: TextStyle(fontSize: 20.0),
                       ),
-                      activeColor: Colors.black,
-                      value: _value,
-                      onChanged: (bool? value) => setState(() {
-                        _value = value!;
-                      }),
+                      onTap: () {},
                     ),
                   ),
+//                if (widget.subjectSubtask.length != 0 && index == 0)
+//                  Card(
+//                    child: CheckboxListTile(
+//                      title: Text(
+//                        widget.subjectSubtask[0]['name'],
+////                        utf8.decode((widget.subjectSubtask[0]['name'])
+////                            .runes
+////                            .toList()),
+//                        style: TextStyle(fontSize: 20.0),
+//                      ),
+//                      activeColor: Colors.black,
+//                      value: _value,
+//                      onChanged: (bool? value) => setState(() {
+//                        _value = value!;
+//                      }),
+//                    ),
+//                  ),
+//                if (widget.subjectSubtask.length != 0 && index == 0)
+//                  Card(
+//                    child: CheckboxListTile(
+//                      title: Text(
+//                        widget.subjectSubtask[1]['name'],
+//                        style: TextStyle(fontSize: 20.0),
+//                      ),
+//                      activeColor: Colors.black,
+//                      value: _value,
+//                      onChanged: (bool? value) => setState(() {
+//                        _value = value!;
+//                      }),
+//                    ),
+//                  ),
+//                if (widget.subjectSubtask.length != 0 && index == 0)
+//                  Card(
+//                    child: CheckboxListTile(
+//                      title: Text(
+//                        widget.subjectSubtask[2]['name'],
+//                        style: TextStyle(fontSize: 20.0),
+//                      ),
+//                      activeColor: Colors.black,
+//                      value: _value,
+//                      onChanged: (bool? value) => setState(() {
+//                        _value = value!;
+//                      }),
+//                    ),
+//                  ),
+                SizedBox(width: 20.0, height: 20.0),
               ],
             );
           },

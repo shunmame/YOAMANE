@@ -1,20 +1,15 @@
+import 'package:http/http.dart' as http;
 import 'yoamane_libraries.dart';
 import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
 import 'timetable.dart';
 
 class TimetableTimeFormPage extends StatefulWidget {
-  TimetableTimeFormPage({required this.token});
-
-  final String token;
-
   @override
   State<StatefulWidget> createState() => _TimetableTimeFormPage();
 }
 
 class _TimetableTimeFormPage extends State<TimetableTimeFormPage> {
   List<String> friendList = [];
-  List<bool> _values = [];
   List<Map<String, dynamic>> _startHour = [];
   List<Map<String, dynamic>> _startMinute = [];
   List<Map<String, dynamic>> _classTime = [];
@@ -128,156 +123,215 @@ class _TimetableTimeFormPage extends State<TimetableTimeFormPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              alignment: Alignment.center,
-              child: Text(
-                'YOAMANEへようこそ！\nはじめにあなたの日程を登録しましょう！',
-                style: TextStyle(fontSize: 30.0),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            SizedBox(width: 20.0, height: 50.0),
-            Text('授業開始時間'),
-            Row(
-              children: [
-                Container(
-                  width: deviceWidth / 2.0 - 20.0,
-                  child: SelectFormField(
-                    type: SelectFormFieldType.dropdown,
-                    initialValue: '-',
-                    icon: Icon(Icons.calendar_today_sharp),
-                    labelText: '時',
-                    items: _startHour,
-                    // onChanged: (val) => print(val),
-                    // onSaved: (val) => print(val),
-                  ),
-                ),
-                Container(
-                  width: deviceWidth / 2.0 - 20.0,
-                  child: SelectFormField(
-                    type: SelectFormFieldType.dropdown,
-                    initialValue: '-',
-                    icon: Icon(Icons.calendar_today_sharp),
-                    labelText: '分',
-                    items: _startMinute,
-                    // onChanged: (val) => print(val),
-                    // onSaved: (val) => print(val),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(width: 20.0, height: 20.0),
-            Text('授業時間'),
-            SelectFormField(
-              type: SelectFormFieldType.dropdown,
-              initialValue: '-',
-              icon: Icon(Icons.calendar_today_sharp),
-              labelText: '分',
-              items: _classTime,
-              // onChanged: (val) => print(val),
-              // onSaved: (val) => print(val),
-            ),
-            SizedBox(width: 20.0, height: 20.0),
-            Text('休み時間'),
-            SelectFormField(
-              type: SelectFormFieldType.dropdown,
-              initialValue: '-',
-              icon: Icon(Icons.calendar_today_sharp),
-              labelText: '分',
-              items: _breakTime,
-              // onChanged: (val) => print(val),
-              // onSaved: (val) => print(val),
-            ),
-            SizedBox(width: 20.0, height: 20.0),
-            Text('昼休み開始時間'),
-            Row(
-              children: [
-                Container(
-                  width: deviceWidth / 2.0 - 20.0,
-                  child: SelectFormField(
-                    type: SelectFormFieldType.dropdown,
-                    initialValue: '-',
-                    icon: Icon(Icons.calendar_today_sharp),
-                    labelText: '時',
-                    items: _lunchStartHour,
-                    // onChanged: (val) => print(val),
-                    // onSaved: (val) => print(val),
-                  ),
-                ),
-                Container(
-                  width: deviceWidth / 2.0 - 20.0,
-                  child: SelectFormField(
-                    type: SelectFormFieldType.dropdown,
-                    initialValue: '-',
-                    icon: Icon(Icons.calendar_today_sharp),
-                    labelText: '分',
-                    items: _lunchStartMinute,
-                    // onChanged: (val) => print(val),
-                    // onSaved: (val) => print(val),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(width: 20.0, height: 20.0),
-            Text('昼休み終了時間'),
-            Row(
-              children: [
-                Container(
-                  width: deviceWidth / 2.0 - 20.0,
-                  child: SelectFormField(
-                    type: SelectFormFieldType.dropdown,
-                    initialValue: '-',
-                    icon: Icon(Icons.calendar_today_sharp),
-                    labelText: '時',
-                    items: _lunchEndHour,
-                    // onChanged: (val) => print(val),
-                    // onSaved: (val) => print(val),
-                  ),
-                ),
-                Container(
-                  width: deviceWidth / 2.0 - 20.0,
-                  child: SelectFormField(
-                    type: SelectFormFieldType.dropdown,
-                    initialValue: '-',
-                    icon: Icon(Icons.calendar_today_sharp),
-                    labelText: '分',
-                    items: _lunchEndMinute,
-                    // onChanged: (val) => print(val),
-                    // onSaved: (val) => print(val),
-                  ),
-                ),
-              ],
-            ),
-            Container(
-              width: double.infinity,
-              height: 125.0,
-              alignment: Alignment.center,
-              child: ElevatedButton(
-                child: Text('はじめる'),
-                onPressed: () async {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    content: Text('ログインしています...'),
-                  ));
-
-                  final address = Uri.parse(
-                      'http://sysken8.japanwest.cloudapp.azure.com/api/subject/');
-                  final headers = {'Authorization': widget.token};
-                  final resp = await http.get(address, headers: headers);
-
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => TimetablePage(
-                        token: widget.token,
-                        subjectList: json.decode(resp.body),
-                      ),
+          children: token == ''
+              ? [
+                  Container(
+                    alignment: Alignment.center,
+                    child: Text(
+                      'YOAMANEへようこそ！\nはじめにあなたの日程を登録しましょう！',
+                      style: TextStyle(fontSize: 35.0),
+                      textAlign: TextAlign.center,
                     ),
-                  );
-                },
-              ),
-            ),
-          ],
+                  ),
+                  SizedBox(width: 20.0, height: 50.0),
+                  Text('授業開始時間', style: TextStyle(fontSize: 20.0)),
+                  Row(
+                    children: [
+                      Container(
+                        width: deviceWidth / 2.0 - 20.0,
+                        child: SelectFormField(
+                          type: SelectFormFieldType.dropdown,
+                          initialValue: _startHour[1]['value'],
+                          icon: Icon(Icons.calendar_today_sharp),
+                          labelText: '時',
+                          items: _startHour,
+                          style: TextStyle(fontSize: 25.0),
+                          // onChanged: (val) => print(val),
+                          // onSaved: (val) => print(val),
+                        ),
+                      ),
+                      Container(
+                        width: deviceWidth / 2.0 - 20.0,
+                        child: SelectFormField(
+                          type: SelectFormFieldType.dropdown,
+                          initialValue: _startMinute[10]['value'],
+                          icon: Icon(Icons.calendar_today_sharp),
+                          labelText: '分',
+                          items: _startMinute,
+                          style: TextStyle(fontSize: 25.0),
+                          // onChanged: (val) => print(val),
+                          // onSaved: (val) => print(val),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(width: 20.0, height: 20.0),
+                  Text('授業時間', style: TextStyle(fontSize: 20.0)),
+                  SelectFormField(
+                    type: SelectFormFieldType.dropdown,
+                    initialValue: _classTime[17]['value'],
+                    icon: Icon(Icons.calendar_today_sharp),
+                    labelText: '分',
+                    items: _classTime,
+                    style: TextStyle(fontSize: 25.0),
+                    // onChanged: (val) => print(val),
+                    // onSaved: (val) => print(val),
+                  ),
+                  SizedBox(width: 20.0, height: 20.0),
+                  Text('休み時間', style: TextStyle(fontSize: 20.0)),
+                  SelectFormField(
+                    type: SelectFormFieldType.dropdown,
+                    initialValue: _breakTime[2]['value'],
+                    icon: Icon(Icons.calendar_today_sharp),
+                    labelText: '分',
+                    items: _breakTime,
+                    style: TextStyle(fontSize: 25.0),
+                    // onChanged: (val) => print(val),
+                    // onSaved: (val) => print(val),
+                  ),
+                  SizedBox(width: 20.0, height: 20.0),
+                  Text('昼休み開始時間', style: TextStyle(fontSize: 20.0)),
+                  Row(
+                    children: [
+                      Container(
+                        width: deviceWidth / 2.0 - 20.0,
+                        child: SelectFormField(
+                          type: SelectFormFieldType.dropdown,
+                          initialValue: _lunchStartHour[2]['value'],
+                          icon: Icon(Icons.calendar_today_sharp),
+                          labelText: '時',
+                          items: _lunchStartHour,
+                          style: TextStyle(fontSize: 25.0),
+                          // onChanged: (val) => print(val),
+                          // onSaved: (val) => print(val),
+                        ),
+                      ),
+                      Container(
+                        width: deviceWidth / 2.0 - 20.0,
+                        child: SelectFormField(
+                          type: SelectFormFieldType.dropdown,
+                          initialValue: _lunchStartMinute[0]['value'],
+                          icon: Icon(Icons.calendar_today_sharp),
+                          labelText: '分',
+                          items: _lunchStartMinute,
+                          style: TextStyle(fontSize: 25.0),
+                          // onChanged: (val) => print(val),
+                          // onSaved: (val) => print(val),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(width: 20.0, height: 20.0),
+                  Text('昼休み終了時間', style: TextStyle(fontSize: 20.0)),
+                  Row(
+                    children: [
+                      Container(
+                        width: deviceWidth / 2.0 - 20.0,
+                        child: SelectFormField(
+                          type: SelectFormFieldType.dropdown,
+                          initialValue: _lunchEndHour[3]['value'],
+                          icon: Icon(Icons.calendar_today_sharp),
+                          labelText: '時',
+                          items: _lunchEndHour,
+                          style: TextStyle(fontSize: 25.0),
+                          // onChanged: (val) => print(val),
+                          // onSaved: (val) => print(val),
+                        ),
+                      ),
+                      Container(
+                        width: deviceWidth / 2.0 - 20.0,
+                        child: SelectFormField(
+                          type: SelectFormFieldType.dropdown,
+                          initialValue: _lunchEndMinute[3]['value'],
+                          icon: Icon(Icons.calendar_today_sharp),
+                          labelText: '分',
+                          items: _lunchEndMinute,
+                          style: TextStyle(fontSize: 25.0),
+                          // onChanged: (val) => print(val),
+                          // onSaved: (val) => print(val),
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    width: double.infinity,
+                    height: 125.0,
+                    alignment: Alignment.center,
+                    child: ElevatedButton(
+                      child: Text('はじめる', style: TextStyle(fontSize: 20.0)),
+                      onPressed: () async {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text('ログインしています...'),
+                        ));
+
+                        final _timetableAddress = Uri.parse(
+                            'http://sysken8.japanwest.cloudapp.azure.com/api/timetable/');
+                        final _timetableHeaders = {'Authorization': token};
+                        final _timetableResp = await http.get(_timetableAddress,
+                            headers: _timetableHeaders);
+                        final _subjectAddress = Uri.parse(
+                            'http://sysken8.japanwest.cloudapp.azure.com/api/subject/');
+                        final _subjectHeaders = {'Authorization': token};
+                        final _subjectResp = await http.get(_subjectAddress,
+                            headers: _subjectHeaders);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TimetablePage(
+                              timetableList:
+                                  json.decode(_timetableResp.body)[0],
+                              subjectList: json.decode(_subjectResp.body),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ]
+              : [
+                  Container(
+                    alignment: Alignment.center,
+                    child: Text(
+                      'YOAMANEへようこそ！\nuser1 としてログインしています',
+                      style: TextStyle(fontSize: 35.0),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  Container(
+                    width: double.infinity,
+                    height: 125.0,
+                    alignment: Alignment.center,
+                    child: ElevatedButton(
+                      child: Text('はじめる', style: TextStyle(fontSize: 20.0)),
+                      onPressed: () async {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text('ログインしています...'),
+                        ));
+
+                        final _timetableAddress = Uri.parse(
+                            'http://sysken8.japanwest.cloudapp.azure.com/api/timetable/');
+                        final _timetableHeaders = {'Authorization': token};
+                        final _timetableResp = await http.get(_timetableAddress,
+                            headers: _timetableHeaders);
+                        final _subjectAddress = Uri.parse(
+                            'http://sysken8.japanwest.cloudapp.azure.com/api/subject/');
+                        final _subjectHeaders = {'Authorization': token};
+                        final _subjectResp = await http.get(_subjectAddress,
+                            headers: _subjectHeaders);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => TimetablePage(
+                              timetableList:
+                                  json.decode(_timetableResp.body)[0],
+                              subjectList: json.decode(_subjectResp.body),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
         ),
         // ),
       ),

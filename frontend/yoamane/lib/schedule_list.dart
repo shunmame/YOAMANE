@@ -1,11 +1,13 @@
+import 'package:http/http.dart' as http;
 import 'yoamane_libraries.dart';
 import 'package:intl/intl.dart';
+import 'schedule_edit.dart';
 import 'package:flutter_timetable_view/flutter_timetable_view.dart';
 
 class ScheduleListPage extends StatefulWidget {
-  ScheduleListPage({required this.today, this.scheduleTask});
+  ScheduleListPage({required this.currentDate, this.scheduleTask});
 
-  final DateTime today;
+  final DateTime currentDate;
   final scheduleTask;
 
   @override
@@ -13,10 +15,10 @@ class ScheduleListPage extends StatefulWidget {
 }
 
 class _ScheduleListPage extends State<ScheduleListPage> {
-  List<TableEvent> events = [];
+  List<TableEvent> _events = [];
 
   void setup() {
-    events = new List.generate(
+    _events = new List.generate(
       widget.scheduleTask.length,
       (index) => TableEvent(
         title:
@@ -38,6 +40,22 @@ class _ScheduleListPage extends State<ScheduleListPage> {
               .minute,
         ),
         textStyle: TextStyle(fontSize: 15.0, color: Colors.black),
+        onTap: () async {
+          final _date = DateFormat('yyyy-MM-dd').format(widget.currentDate);
+          final _address = Uri.parse(
+              'http://sysken8.japanwest.cloudapp.azure.com/api/schedule/?user=2&date=$_date');
+          final _headers = {
+            'content-type': 'application/json',
+            'Authorization': token
+          };
+          final _resp = await http.get(_address, headers: _headers);
+
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => ScheduleEditPage(
+                    scheduleData: json.decode(_resp.body)[index],
+                    currentDate: widget.currentDate,
+                  )));
+        },
       ),
     );
   }
@@ -54,7 +72,7 @@ class _ScheduleListPage extends State<ScheduleListPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('${DateFormat('M月d日').format(widget.today)}の予定'),
+        title: Text('${DateFormat('M月d日').format(widget.currentDate)}の予定'),
       ),
       body: TimetableView(
         timetableStyle: TimetableStyle(
@@ -64,7 +82,7 @@ class _ScheduleListPage extends State<ScheduleListPage> {
         laneEventsList: [
           LaneEvents(
             lane: Lane(name: ''),
-            events: events.length == 0 ? [] : events,
+            events: _events.length != 0 ? _events : [],
           ),
         ],
       ),

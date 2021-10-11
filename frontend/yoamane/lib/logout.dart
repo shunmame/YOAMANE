@@ -1,4 +1,5 @@
 import 'yoamane_libraries.dart';
+import 'login.dart';
 
 class LogoutPage extends StatefulWidget {
   @override
@@ -26,9 +27,10 @@ class _LogoutPage extends State<LogoutPage> {
                   foregroundColor: MaterialStateProperty.all(Colors.white),
                 ),
                 onPressed: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pop();
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => LoginPage()));
+//                  SystemNavigator.pop();
+//                  Navigator.of(context).pop();
                 },
               ),
               TextButton(

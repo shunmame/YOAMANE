@@ -2,41 +2,42 @@ import 'package:http/http.dart' as http;
 import 'yoamane_libraries.dart';
 import 'package:intl/intl.dart';
 
-class ScheduleFormPage extends StatefulWidget {
-  ScheduleFormPage({this.currentDate});
+class ScheduleEditPage extends StatefulWidget {
+  ScheduleEditPage({this.scheduleData, this.currentDate});
 
+  final scheduleData;
   final currentDate;
 
   @override
-  State<StatefulWidget> createState() => _ScheduleFormPage();
+  State<StatefulWidget> createState() => _ScheduleEditPage();
 }
 
-class _ScheduleFormPage extends State<ScheduleFormPage> {
+class _ScheduleEditPage extends State<ScheduleEditPage> {
   final _formKey = GlobalKey<FormState>();
 
+  Map<String, dynamic> _schedule = {};
+  String _startHour = '';
+  String _startMinute = '';
+  String _endHour = '';
+  String _endMinute = '';
+
   List<String> friendList = [];
-  List<Map<String, dynamic>> _month = [];
-  List<Map<String, dynamic>> _day = [];
   List<Map<String, dynamic>> _hour = [];
   List<Map<String, dynamic>> _minute = [];
   List<Map<String, dynamic>> _notificationTime = [];
 
   void setup() {
-    DateTime now = DateTime.now();
-    _month = new List.generate(
-        12,
-        (i) => Map<String, dynamic>.fromIterable(
-            new List.generate(12, (j) => DateTime(now.year, i + 1)),
-            key: (item) => 'value',
-            value: (item) => DateFormat('M月').format(item)));
+    _schedule = widget.scheduleData;
+    _startHour = DateFormat('HH時')
+        .format(DateTime.parse(_schedule["start_time"]).toLocal());
+    _startMinute = DateFormat('mm分')
+        .format(DateTime.parse(_schedule["start_time"]).toLocal());
+    _endHour = DateFormat('HH時')
+        .format(DateTime.parse(_schedule["end_time"]).toLocal());
+    _endMinute = DateFormat('mm分')
+        .format(DateTime.parse(_schedule["end_time"]).toLocal());
 
-    _day = new List.generate(
-        // 2月30日、みたいな指定もできてしまうのよくない
-        31,
-        (i) => Map<String, dynamic>.fromIterable(
-            new List.generate(31, (j) => DateTime(now.year, now.month, i + 1)),
-            key: (item) => 'value',
-            value: (item) => DateFormat('d日').format(item)));
+    DateTime now = DateTime.now();
 
     _hour = new List.generate(
         12,
@@ -78,16 +79,10 @@ class _ScheduleFormPage extends State<ScheduleFormPage> {
   @override
   Widget build(BuildContext context) {
     final double deviceWidth = MediaQuery.of(context).size.width;
-    String _title = '';
-    String _memo = '';
-    String _startHour = '';
-    String _startMinute = '';
-    String _endHour = '';
-    String _endMinute = '';
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('予定の追加'),
+        title: Text('予定の変更'),
       ),
       resizeToAvoidBottomInset: false,
       body: Form(
@@ -99,45 +94,17 @@ class _ScheduleFormPage extends State<ScheduleFormPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(width: 20.0, height: 20.0),
-              Text('予定名', style: TextStyle(fontSize: 20.0)),
+              Text('変更前', style: TextStyle(fontSize: 20.0)),
+              Text(utf8Convert(_schedule['title']),
+                  style: TextStyle(fontSize: 45.0)),
+              SizedBox(width: 20.0, height: 20.0),
+              Text('変更後', style: TextStyle(fontSize: 20.0)),
               TextFormField(
                 maxLength: 50,
                 decoration: InputDecoration(border: OutlineInputBorder()),
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: (value) => formStatus(value),
-                onSaved: (String? value) => _title = value!,
-              ),
-              SizedBox(width: 20.0, height: 20.0),
-              Text('日付', style: TextStyle(fontSize: 20.0)),
-              Row(
-                children: [
-                  Container(
-                    width: deviceWidth / 2.0 - 20.0,
-                    child: SelectFormField(
-                      type: SelectFormFieldType.dropdown,
-                      initialValue: DateFormat('M月').format(widget.currentDate),
-                      icon: Icon(Icons.calendar_today_sharp),
-                      labelText: '月',
-                      items: _month,
-                      style: TextStyle(fontSize: 25.0),
-                      // onChanged: (val) => print(val),
-                      // onSaved: (val) => print(val),
-                    ),
-                  ),
-                  Container(
-                    width: deviceWidth / 2.0 - 20.0,
-                    child: SelectFormField(
-                      type: SelectFormFieldType.dropdown,
-                      initialValue: DateFormat('d日').format(widget.currentDate),
-                      icon: Icon(Icons.calendar_today_sharp),
-                      labelText: '日',
-                      items: _day,
-                      style: TextStyle(fontSize: 25.0),
-                      // onChanged: (val) => print(val),
-                      // onSaved: (val) => print(val),
-                    ),
-                  ),
-                ],
+                onSaved: (String? value) => _schedule["title"] = value!,
               ),
               SizedBox(width: 20.0, height: 20.0),
               Text('開始時間', style: TextStyle(fontSize: 20.0)),
@@ -147,7 +114,7 @@ class _ScheduleFormPage extends State<ScheduleFormPage> {
                     width: deviceWidth / 2.0 - 20.0,
                     child: SelectFormField(
                       type: SelectFormFieldType.dropdown,
-                      initialValue: '-',
+                      initialValue: _startHour,
                       icon: Icon(Icons.calendar_today_sharp),
                       labelText: '時',
                       items: _hour,
@@ -161,7 +128,7 @@ class _ScheduleFormPage extends State<ScheduleFormPage> {
                     width: deviceWidth / 2.0 - 20.0,
                     child: SelectFormField(
                       type: SelectFormFieldType.dropdown,
-                      initialValue: '-',
+                      initialValue: _startMinute,
                       icon: Icon(Icons.calendar_today_sharp),
                       labelText: '分',
                       items: _minute,
@@ -181,7 +148,7 @@ class _ScheduleFormPage extends State<ScheduleFormPage> {
                     width: deviceWidth / 2.0 - 20.0,
                     child: SelectFormField(
                       type: SelectFormFieldType.dropdown,
-                      initialValue: '-',
+                      initialValue: _endHour,
                       icon: Icon(Icons.calendar_today_sharp),
                       labelText: '時',
                       items: _hour,
@@ -195,7 +162,7 @@ class _ScheduleFormPage extends State<ScheduleFormPage> {
                     width: deviceWidth / 2.0 - 20.0,
                     child: SelectFormField(
                       type: SelectFormFieldType.dropdown,
-                      initialValue: '-',
+                      initialValue: _endMinute,
                       icon: Icon(Icons.calendar_today_sharp),
                       labelText: '分',
                       items: _minute,
@@ -220,10 +187,10 @@ class _ScheduleFormPage extends State<ScheduleFormPage> {
               SizedBox(width: 20.0, height: 20.0),
               Text('メモ', style: TextStyle(fontSize: 20.0)),
               TextFormField(
+                initialValue: utf8Convert(_schedule["memo"]),
                 decoration: InputDecoration(border: OutlineInputBorder()),
                 autovalidateMode: AutovalidateMode.onUserInteraction,
-                validator: (value) => formStatus(value),
-                onSaved: (String? value) => _memo = value!,
+                onSaved: (String? value) => _schedule["memo"] = value!,
               ),
               Container(
                 width: double.infinity,
@@ -235,23 +202,28 @@ class _ScheduleFormPage extends State<ScheduleFormPage> {
                     _formKey.currentState?.save();
                     final _date =
                         DateFormat('yyyy-MM-ddT').format(widget.currentDate);
+                    if (_startHour != '' && _startMinute != '')
+                      _schedule["start_time"] =
+                          _date + _startHour + _startMinute;
+                    if (_endHour != '' && _endMinute != '')
+                      _schedule["end_time"] = _date + _endHour + _endMinute;
                     final _address = Uri.parse(
-                        'http://sysken8.japanwest.cloudapp.azure.com/api/schedule/');
+                        'http://sysken8.japanwest.cloudapp.azure.com/api/schedule/${_schedule["id"]}/');
                     final _headers = {
                       'content-type': 'application/json',
                       'Authorization': token
                     };
                     final _body = json.encode({
-                      "title": "$_title",
-                      "start_time": _date + _startHour + _startMinute + ":00",
-                      "end_time": _date + _endHour + _endMinute + ":00",
+                      "title": _schedule["title"],
+                      "start_time": _schedule["start_time"],
+                      "end_time": _schedule["end_time"],
                       "is_all_day": false,
                       "nofitying_time": null,
                       "collaborating_member_id": 2,
-                      "memo": "$_memo",
+                      "memo": _schedule["memo"],
                       "user": 2,
                     });
-                    final _resp = await http.post(_address,
+                    final _resp = await http.put(_address,
                         headers: _headers, body: _body);
 
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -261,6 +233,7 @@ class _ScheduleFormPage extends State<ScheduleFormPage> {
                               ? '保存しました'
                               : '保存できませんでした'),
                     ));
+                    Navigator.of(context).pop();
                     Navigator.of(context).pop();
                   },
                 ),

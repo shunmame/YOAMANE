@@ -1,6 +1,6 @@
 # yoamane
 
-A new Flutter project.
+This is YOAMANE app.
 
 ## Getting Started
 

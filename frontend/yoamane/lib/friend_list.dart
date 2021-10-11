@@ -1,11 +1,12 @@
+import 'package:http/http.dart' as http;
 import 'yoamane_libraries.dart';
 import 'friend_form.dart';
 import 'tag_form.dart';
 
 class FriendListPage extends StatefulWidget {
-  FriendListPage({this.friendList, this.tagList});
+  FriendListPage({this.friendName, this.tagList});
 
-  final friendList;
+  final friendName;
   final tagList;
 
   @override
@@ -34,33 +35,25 @@ class _FriendListPage extends State<FriendListPage> {
       appBar: AppBar(
         title: Text('フレンドリスト'),
       ),
-//      floatingActionButton: FloatingActionButton(
-//        child: Icon(Icons.add),
-//        onPressed: () {
-//          Navigator.of(context).push(
-//            MaterialPageRoute(builder: (context) => FriendFormPage()),
-//          );
-//        },
-//      ),
       body: Container(
         padding: EdgeInsets.only(left: 20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(width: 20.0, height: 20.0),
-            Text('あなたのフレンド'),
+            Text('あなたのフレンド', style: TextStyle(fontSize: 25.0)),
             ListView.builder(
               shrinkWrap: true,
-              itemCount: widget.friendList.length,
+              itemCount: widget.friendName.length,
               itemBuilder: (context, index) {
                 return Row(
                   children: [
                     Container(
                       width: deviceWidth / 2.0,
                       child: Text(
-                        widget.friendList[index],
+                        widget.friendName[index],
                         textAlign: TextAlign.left,
-                        style: TextStyle(fontSize: 25.0),
+                        style: TextStyle(fontSize: 35.0),
                       ),
                     ),
                     Container(
@@ -77,20 +70,31 @@ class _FriendListPage extends State<FriendListPage> {
                 );
               },
             ),
+            SizedBox(width: 20.0, height: 20.0),
             Container(
               alignment: Alignment.topRight,
               margin: EdgeInsets.only(right: 25.0),
               child: FloatingActionButton(
                 child: Icon(Icons.add),
-                onPressed: () {
+                onPressed: () async {
+                  final _address = Uri.parse(
+                      'http://sysken8.japanwest.cloudapp.azure.com/api/user/1/');
+                  final _headers = {
+                    'content-type': 'application/json',
+                    'Authorization': token
+                  };
+                  final _resp = await http.get(_address, headers: _headers);
+                  final _ID = json.decode(_resp.body)["user_id"].split('-');
+
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => FriendFormPage()),
+                    MaterialPageRoute(
+                        builder: (context) => FriendFormPage(id: _ID[0])),
                   );
                 },
               ),
             ),
             SizedBox(width: 20.0, height: 20.0),
-            Text('あなたのタグ'),
+            Text('あなたのタグ', style: TextStyle(fontSize: 25.0)),
             LimitedBox(
               maxHeight: deviceHeight / 3.0,
               child: ListView.builder(
@@ -98,7 +102,10 @@ class _FriendListPage extends State<FriendListPage> {
                 itemCount: widget.tagList.length,
                 itemBuilder: (context, index) {
                   return CheckboxListTile(
-                    title: Text(widget.tagList[index]),
+                    title: Text(
+                        utf8.decode(
+                            (widget.tagList[index]['name']).runes.toList()),
+                        style: TextStyle(fontSize: 35.0)),
                     activeColor: Colors.black,
                     value: _selected[index],
                     onChanged: (bool? value) => setState(() {
@@ -116,7 +123,9 @@ class _FriendListPage extends State<FriendListPage> {
                 child: Icon(Icons.add),
                 onPressed: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => TagFormPage()),
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            TagFormPage(friendName: widget.friendName)),
                   );
                 },
               ),

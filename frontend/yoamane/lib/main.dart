@@ -2,10 +2,7 @@
 
 import 'yoamane_libraries.dart';
 import 'login.dart';
-import 'timetable.dart';
-import 'api_sample/get_sample.dart';
-import 'api_sample/post_sample.dart';
-import 'termination_message.dart';
+import 'api_sample.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,9 +18,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'YOAMANE',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.purple,
       ),
+//      home: token == '' ? LoginPage() : TimetableTimeFormPage(),
       home: LoginPage(),
     );
   }
